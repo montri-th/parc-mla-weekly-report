@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="รายงาน 28 วันล่าสุดที่เปลี่ยนเสียงของลูกค้าและร้านค้าเป็นงานที่มีเจ้าของ วัดผลได้ และบอกผลกลับ">
+  <title>P​ARC Bangna · รายงาน 28 วันล่าสุด</title>
+  <script>
+    (() => {
+      const savedTheme = localStorage.getItem("parc-report-theme");
+      document.documentElement.dataset.theme = ["system", "dark", "light"].includes(savedTheme) ? savedTheme : "system";
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@100;200&family=IBM+Plex+Sans+Thai+Looped:wght@200;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/vendor/maplibre-gl-6.1.0.css">
+  <link rel="stylesheet" href="./styles.css?v=20260803-8">
+</head>
+<body data-brand="parc">
+  <a class="skip-link" href="#main">ข้ามไปยังเนื้อหาหลัก</a>
+  <header class="masthead">
+    <div class="brand-lockup">
+      <span class="brand-mark">
+        <img src="./assets/parc-bangna-logo.png" alt="PARC Bangna">
+      </span>
+      <span class="brand-copy">
+        <span class="report-kicker">MLA Weekly Report</span>
+        <span class="brand-title">Customer &amp; Competitor Signals</span>
+      </span>
+    </div>
+    <div class="masthead-actions">
+      <div class="live-state" id="liveState"><span class="dot"></span><span>กำลังอ่านข้อมูลล่าสุด</span></div>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-label="โหมดสีตามระบบ" title="โหมดสีตามระบบ">
+        <svg class="ui-icon theme-icon theme-icon-system" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>
+        <svg class="ui-icon theme-icon theme-icon-dark" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.4A8.5 8.5 0 0 1 9.6 3.5 8.5 8.5 0 1 0 20.5 14.4Z"></path></svg>
+        <svg class="ui-icon theme-icon theme-icon-light" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero shell">
+      <div>
+        <p class="eyebrow">รายงาน 28 วันล่าสุด</p>
+        <h1>ช่วงนี้เกิดอะไรขึ้น<br>และเราควรทำอะไรต่อ</h1>
+        <p class="hero-copy">สรุปเสียงลูกค้า ความเคลื่อนไหวของคู่แข่ง และเรื่องที่ทีมควรลงมือเช็ก เพื่อให้ทุกเสียงไปถึงคนที่ช่วยแก้ได้ และให้ลูกค้ากับร้านค้ารู้ว่าเราได้ยินและเปลี่ยนอะไรแล้ว</p>
+        <div class="hero-actions" aria-label="ทางลัดในรายงาน">
+          <a class="hero-cta primary" href="#reviewVoices">
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4V5Z"></path><path d="M8 9h8M8 12h5"></path></svg>
+            <span><strong>ฟังเสียงที่ช่วยเลือกงานวันนี้</strong><small>อ่านรีวิวจริงและวิธีทดลอง</small></span>
+            <svg class="ui-icon arrow-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m14 7 5 5-5 5"></path></svg>
+          </a>
+          <a class="hero-cta secondary" href="#urgentChecks">ดูสองเรื่องที่ต้องตรวจวันนี้</a>
+        </div>
+      </div>
+      <div class="date-control card-soft">
+        <label for="asOf">วันสิ้นสุดของกราฟ 28 วัน</label>
+        <input type="date" id="asOf">
+        <button type="button" id="refreshBtn">ดึงข้อมูลล่าสุด</button>
+        <p id="windowLabel" class="micro"></p>
+      </div>
+    </section>
+
+    <section class="shell signal-strip" aria-label="สถานะข้อมูล">
+      <div><span>ข้อมูลจาก</span><strong id="sourceLabel">—</strong></div>
+      <div><span>อัปเดตถึง</span><strong id="updatedLabel">—</strong></div>
+      <div><span>สถานะ MLA</span><strong id="coverageLabel">—</strong></div>
+      <div><span>รีวิวที่จัดช่วงเวลาได้</span><strong id="reviewTimeLabel">—</strong></div>
+    </section>
+
+    <section class="shell section-block">
+      <div class="section-head"><div><p class="eyebrow">คำตอบสั้น ๆ</p><h2>สามเรื่องที่ควรทำก่อน</h2></div></div>
+      <div class="decision-grid">
+        <article class="decision-card"><span class="decision-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v5c0 5 3.4 8.3 8 10 4.6-1.7 8-5 8-10V6l-8-3Z"></path><path d="m9 12 2 2 4-5"></path></svg></span><p class="decision-number">01 · ความไว้ใจ</p><h3>ตรวจสองเรื่องที่อาจกระทบความไว้ใจ</h3><p>ตรวจสุขภาพสนามหญ้าที่ PARC และตรวจข้อกล่าวหาเรื่องการถ่ายภาพลูกค้าที่ La Salle's Avenue ให้ชัดก่อนนำไปพูดต่อ</p></article>
+        <article class="decision-card"><span class="decision-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><p class="decision-number">02 · มื้อเย็น</p><h3>เช็กเวลาปิดจริงของร้านอาหาร</h3><p>ศูนย์เปิดถึง 22:00 แต่บางร้านอาจปิดตั้งแต่ 19:00–20:00 ขณะที่คู่แข่งด้านอาหารบางรายเปิดถึง 23:00 เรื่องนี้กระทบมื้อเย็นโดยตรง</p></article>
+        <article class="decision-card"><span class="decision-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"></path><path d="M12 7v5l4 2"></path><path d="M17 3h4v4"></path><path d="m21 3-5 5"></path></svg></span><p class="decision-number">03 · หลักฐาน</p><h3>ใช้รีวิวชี้จุดตรวจ ไม่ใช้ตัดสินแทนข้อมูลจริง</h3><p>เรื่องที่พบมากที่สุดคือที่จอดรถและทางเข้า แต่รีวิวจาก Google ยังเป็นเสียงจากแพลตฟอร์มเดียว ต้องเช็กหน้างานก่อนเปลี่ยนนโยบาย</p></article>
+      </div>
+    </section>
+
+    <section class="shell section-block feedback-loop-section" id="feedbackLoop">
+      <div class="section-head feedback-loop-head">
+        <div><p class="eyebrow">วงจรฟัง–ทำ–เรียนรู้</p><h2>ฟังทุกเสียงให้ถึงคนลงมือ แล้วกลับไปบอกผล</h2></div>
+        <p class="section-note">ทุกจุดที่ลูกค้าหรือร้านค้าเจอกับ PARC เป็นโอกาสให้เขารู้สึกว่าที่นี่มีชีวิต มีใจ และเข้าใจเขาจริง เสียงที่เราได้รับจึงไม่ควรจบอยู่แค่ในรายงาน</p>
+      </div>
+      <p class="feedback-vision"><strong>ปลายทางของวงจรนี้</strong> คือให้คนไว้ใจ PARC Bangna เป็นที่ประจำ—สงบ เป็นส่วนตัว และช่วยให้ชีวิตประจำวันง่ายกว่าที่คาด จนเป็นที่แรกที่นึกถึงเมื่อต้องการกิน พัก ดูแลตัวเอง หรือพาครอบครัวมา</p>
+      <ol class="feedback-loop" aria-label="ห้าขั้นตอนปิดวงจรเสียงลูกค้า">
+        <li><span>01</span><strong>รับเสียงจากทุกจุด</strong><p>เก็บทั้งคำชม ข้อติดขัด และสิ่งที่ร้านเห็นหน้างาน โดยตัดข้อมูลส่วนตัวที่ไม่จำเป็นออก</p></li>
+        <li><span>02</span><strong>ส่งให้คนที่แก้ได้</strong><p>แยกข้อเท็จจริงออกจากเรื่องที่ยังต้องตรวจ แล้วระบุเจ้าของงานและวันที่จะกลับมาเช็กผล</p></li>
+        <li><span>03</span><strong>ลองแก้เล็ก ๆ กับอย่างน้อย 2 ร้าน</strong><p>ช่วยให้ลูกค้าทำภารกิจเดียวกันได้ง่ายขึ้น โดยยังเลือกเส้นทางและจังหวะของตัวเองได้</p></li>
+        <li><span>04</span><strong>วัดว่าลูกค้าและร้านได้อะไร</strong><p>ดูว่าลูกค้าสะดวกและสบายใจขึ้นไหม และร้านได้รับการส่งต่อที่เหมาะสมโดยไม่กดดันลูกค้าหรือไม่</p></li>
+        <li><span>05</span><strong>บอกผลกลับ แล้วฟังต่อ</strong><p>บอกลูกค้าและร้านค้าว่าเราได้ยินอะไร เปลี่ยนอะไร และยังไม่รู้อะไร แล้วชวนช่วยกันทำให้ครั้งต่อไปดีขึ้น</p></li>
+      </ol>
+      <div class="feedback-role-actions" aria-label="ทางลัดตามบทบาท">
+        <a href="#urgentChecks">Ops / CX · ตรวจจุดเสี่ยงให้ลูกค้ามั่นใจขึ้น</a>
+        <a href="#tenantDirectory">Tenant Relations · ชวน 2 ร้านทำเส้นทางที่ลูกค้าใช้จริง</a>
+        <a href="#reviewVoices">Brand / CRM · บอกผลกลับให้ลูกค้ารู้ว่าเสียงไม่หาย</a>
+      </div>
+      <p class="micro feedback-guardrail">ทุกเรื่องต้องมีเจ้าของงาน วันเช็กผล และสิ่งที่ลูกค้าควรได้รับ ใช้ข้อมูลเท่าที่จำเป็น ไม่เปิดเผยตัวบุคคล และไม่อ้างเกินหลักฐาน</p>
+    </section>
+
+    <section class="shell section-block review-voice-section" id="reviewVoices">
+      <div class="section-head review-head">
+        <div><p class="eyebrow">เสียงลูกค้าจริง</p><h2>ประโยคที่แต่ละทีมควรได้ยิน</h2></div>
+        <div class="review-filters" role="group" aria-label="กรองเสียงลูกค้า">
+          <button type="button" class="filter-button active" data-review-filter="all">ทั้งหมด</button>
+          <button type="button" class="filter-button" data-review-filter="parc">PARC</button>
+          <button type="button" class="filter-button" data-review-filter="tenant">ร้านของเรา</button>
+          <button type="button" class="filter-button" data-review-filter="competitor">คู่แข่ง</button>
+        </div>
+      </div>
+      <p class="section-note review-note">ข้อความสั้นตามที่แพลตฟอร์มแสดง ณ วันที่เก็บ รีวิวหนึ่งรายการคือเบาะแสให้ลงมือเช็ก ไม่ใช่ข้อสรุปแทนลูกค้าทั้งหมด</p>
+      <div id="reviewHighlightGrid" class="review-highlight-grid"></div>
+    </section>
+
+    <section class="shell section-block">
+      <div class="section-head">
+        <div><p class="eyebrow">รีวิวที่เกิดขึ้นจริง · 28 วันล่าสุด</p><h2>มีเสียงใหม่ให้ทีมตามมากขึ้นไหม</h2></div>
+        <p class="section-note" id="comparisonNote"></p>
+      </div>
+      <p class="metric-summary" id="metricSummary"></p>
+      <div class="kpi-grid" id="kpiGrid"></div>
+    </section>
+
+    <section class="shell split-grid section-block">
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">เทียบสองช่วง</p><h2>เสียงใหม่ที่ทีมควรอ่านต่อ</h2></div><div class="legend"><span><i class="swatch current"></i>28 วันล่าสุด</span><span><i class="swatch previous"></i>28 วันก่อน</span></div></div>
+        <div id="periodInsight" class="period-insight"></div>
+        <div id="reviewCompareBars" class="period-bars" role="img" aria-label="เปรียบเทียบจำนวนรีวิวตามเวลาต้นทางสองช่วง 28 วัน"></div>
+        <p class="micro caveat" id="reviewDateQuality"></p>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">ประเด็นที่พบ</p><h2>ข้อสังเกตพูดถึงเรื่องไหนมาก</h2></div></div>
+        <p class="micro drilldown-hint">กดแต่ละประเด็นเพื่อเปิดดูข้อสังเกตและแหล่งต้นทางที่อยู่ข้างใต้</p>
+        <div id="themeBars" class="theme-bars"></div>
+        <p class="micro caveat">ตัวเลขนี้คือจำนวนข้อสังเกตที่บันทึกไว้ ไม่ใช่จำนวนลูกค้า และไม่ใช่สัดส่วนของปัญหาทั้งหมด</p>
+      </article>
+    </section>
+
+    <section class="shell section-block" id="monthlyReviewHistory">
+      <div class="section-head">
+        <div><p class="eyebrow">12 ช่วงย้อนหลัง · เก็บจาก Google Maps 3 ส.ค. 2569</p><h2>จังหวะรีวิวของ PARC เทียบกับคู่แข่ง</h2></div>
+        <label class="chart-picker" for="monthlyCompetitor">เลือกศูนย์ที่ต้องการเทียบ
+          <select id="monthlyCompetitor" aria-label="เลือกศูนย์คู่แข่งสำหรับกราฟรีวิวรายเดือน"></select>
+        </label>
+      </div>
+      <p class="section-note monthly-section-note">กราฟนับรีวิวที่เราเห็นเมื่อเรียง “ใหม่สุด” แล้วแบ่งตามคำบอกเวลาของ Google เช่น “2 เดือนก่อน” จึงใช้มองจังหวะขึ้น–ลงได้ แต่ห้ามอ่านเป็นยอดรายเดือนที่ Google รายงาน</p>
+      <div id="monthlyAnomalySummary" class="anomaly-summary" aria-live="polite"></div>
+      <article class="panel monthly-chart-panel">
+        <div id="monthlyReviewChart" class="monthly-review-chart" aria-live="polite"></div>
+      </article>
+    </section>
+
+    <section class="shell section-block" id="urgentChecks">
+      <div class="section-head"><div><p class="eyebrow">ต้องทำทันที</p><h2>สองเรื่องที่ต้องเช็กก่อนเรื่องอื่น</h2></div><span class="pill danger">ให้คนตรวจวันนี้</span></div>
+      <div id="urgentGrid" class="urgent-grid"></div>
+    </section>
+
+    <section class="shell section-block">
+      <div class="section-head">
+        <div><p class="eyebrow">ยอดรีวิวสะสม</p><h2>บทสนทนาของแต่ละสถานที่ใหญ่แค่ไหน</h2></div>
+        <p class="section-note">ตัวเลขนี้ช่วยให้เห็นว่าแต่ละสถานที่มีรีวิวสะสมมากน้อยเพียงใด เพื่อรู้ว่าฐานที่นำมาเทียบต่างกันแค่ไหน แต่ไม่ได้บอกว่าเดือนนี้โตเร็วหรือช้า</p>
+      </div>
+      <div id="velocityContextGrid" class="velocity-context-grid"></div>
+      <p class="metric-summary velocity-summary"><strong>ใช้ดูได้:</strong> แต่ละสถานที่มีรีวิวสะสมมากน้อยเพียงใด เพื่อรู้ว่าฐานที่นำมาเทียบต่างกันแค่ไหน<br><strong>อย่าใช้สรุป:</strong> ว่าใครกำลังโตเร็วหรือบริการดีกว่า จนกว่าเราจะเก็บยอดจากหลายวันต่อเนื่อง</p>
+    </section>
+
+    <section class="shell section-block" id="tenantDirectory">
+      <div class="section-head">
+        <div><p class="eyebrow">ร้านของเรา</p><h2>ลูกค้าพูดถึงร้านใน PARC อย่างไร</h2></div>
+        <p class="section-note" id="tenantCoverage"></p>
+      </div>
+      <div class="tenant-theme-grid" id="tenantThemeGrid"></div>
+      <article class="panel tenant-panel">
+        <div class="panel-head">
+          <div><p class="eyebrow">ดูรายร้าน</p><h2>คะแนน จำนวนรีวิว และเสียงที่เราอ่านได้</h2></div>
+          <input class="table-search" type="search" id="tenantSearch" placeholder="ค้นหาชื่อร้าน" aria-label="ค้นหาชื่อร้าน">
+        </div>
+        <div class="table-scroll"><table><thead><tr><th>ร้าน</th><th>คะแนน</th><th>รีวิวทั้งหมด</th><th>รีวิวที่อ่านได้</th><th>ตรวจชื่อร้านจาก</th></tr></thead><tbody id="tenantRows"></tbody></table></div>
+        <p class="micro caveat">คะแนน Google และจำนวนรีวิวเก็บเมื่อ 2 ส.ค. 2569 ชุดส่งต่อเดิมมี 202 แถว เมื่อตัดแถวซ้ำ คำตอบเจ้าของร้าน และรายการที่ไม่ควรแสดงสาธารณะ หน้าเว็บเปิดอ่านได้ 183 รายการ เราเก็บเสียงของ Kinroll เพิ่มอีก 10 รายการเมื่อ 3 ส.ค. 2569 จึงเปิดอ่านได้รวม 193 รายการจาก 25 ร้าน ทั้งหมดเป็นตัวอย่างล่าสุด ไม่ใช่สัดส่วนของลูกค้าทั้งหมด</p>
+      </article>
+    </section>
+
+    <section class="shell section-block competitor-map-section" id="competitorMap">
+      <div class="section-head competitor-map-head">
+        <div><p class="eyebrow">แผนที่จริงรอบ PARC</p><h2>ดูตำแหน่งจริง แล้วเปิดเรื่องที่ทีมควรตามต่อ</h2></div>
+        <p class="section-note">ทีมกลยุทธ์และดูแลร้านค้าใช้ดูระยะและทิศทางบนถนนจริง ส่วนทีมแบรนด์และปฏิบัติการเปิดคะแนน รีวิว และหลักฐานก่อนนำบทเรียนมาปรับกับ PARC</p>
+      </div>
+      <div class="competitor-map-layout">
+        <div class="competitor-map-stage" id="competitorMapCanvas" aria-label="แผนที่ย่อ PARC Bangna และคู่แข่ง" role="group"></div>
+        <aside class="competitor-map-readout" id="competitorMapReadout" aria-live="polite"></aside>
+      </div>
+      <div class="competitor-map-index" id="competitorMapIndex" aria-label="เลือกสถานที่บนแผนที่"></div>
+      <div class="competitor-map-unplaced" id="competitorMapUnplaced"></div>
+      <div class="competitor-map-legend" aria-label="คำอธิบายสัญลักษณ์แผนที่">
+        <span><i class="map-legend-marker parc"></i>PARC Bangna</span>
+        <span><i class="map-legend-marker competitor"></i>สถานที่ที่ยืนยันพิกัดแล้ว</span>
+        <span id="competitorMapPendingLegend"><i class="map-legend-marker reference"></i>ยังไม่วางหมุดจนกว่าจะยืนยันพิกัด</span>
+      </div>
+      <p class="micro competitor-map-caveat">ถนนและพื้นที่มาจาก OpenStreetMap ผ่าน OpenFreeMap ส่วนหมุดวางตรงพิกัดที่ผ่านการตรวจ ณ วันที่เก็บข้อมูล ไม่มีการเลื่อนหมุดเพื่อความสวยงาม ปุ่มลูกบาศก์เพียงเอียงมุมมองเพื่ออ่านบริบท ไม่ใช่แบบจำลองอาคาร แผนที่นี้ยังใช้แทนทางเข้า การนำทาง เวลาเดินทาง ขอบเขตพื้นที่บริการ หรือถิ่นที่อยู่ลูกค้าไม่ได้</p>
+    </section>
+
+    <section class="shell split-grid section-block">
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">แยกตามสถานที่</p><h2>แต่ละแห่งมีข้อสังเกตให้ตามกี่ข้อ</h2></div><select id="entityMetric" aria-label="เลือกข้อมูลที่ต้องการดู"><option value="total">ข้อสังเกตทั้งหมด</option><option value="nonDuplicate">ข้อสังเกตที่ไม่ซ้ำ</option><option value="curated">ผ่านการตรวจสำหรับใช้ภายใน</option></select></div>
+        <div id="entityTable" class="entity-table"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">ข้อมูลพื้นฐาน</p><h2>เวลาปิดและข้อมูลรีวิวแต่ละแห่ง</h2></div><select id="venueType" aria-label="กรองประเภทสถานที่"><option value="all">ทุกประเภท</option></select></div>
+        <div class="table-scroll"><table><thead><tr><th>สถานที่</th><th>ประเภท</th><th>คะแนน</th><th>จำนวนรีวิว</th><th>ปิด</th></tr></thead><tbody id="venueRows"></tbody></table></div>
+        <p class="micro caveat">คะแนนและจำนวนรีวิวเป็นภาพ ณ วันที่เก็บข้อมูล ใช้ดูบริบทเท่านั้น ไม่ควรเอาสถานที่ต่างประเภทหรือต่างอายุมาเทียบตรง ๆ</p>
+      </article>
+    </section>
+
+    <section class="shell section-block">
+      <details class="methodology">
+        <summary>ที่มาของตัวเลขและข้อควรระวัง</summary>
+        <div class="rules-grid">
+          <p><strong>ข้อสังเกตทั้ง 75 รายการผ่านการตรวจและเลือกใช้ภายในแล้ว</strong><br>หมายถึงมีหลักฐานให้ย้อนดู ไม่ได้แปลว่าข้อกล่าวหาทุกข้อเป็นจริง เรื่องสุขภาพ ความปลอดภัย และ PDPA ยังต้องตรวจหน้างาน</p>
+          <p><strong>หลายรีวิวใน Google ยังเป็นแพลตฟอร์มเดียว</strong><br>จำนวนคนที่พูดซ้ำช่วยชี้จุดที่ควรตรวจ แต่ยังใช้แทนผลสำรวจลูกค้าทั้งหมดไม่ได้</p>
+          <p><strong>Google บอกเวลาแบบประมาณ เช่น “1 เดือนก่อน”</strong><br>เราจึงเก็บเป็นช่วงวันที่ ไม่แต่งให้เป็นวันเดียว วันที่นำเข้า MLA ใช้ดูว่าข้อมูลสดแค่ไหน ส่วน “Edited … ago” ไม่นับเป็นรีวิวใหม่</p>
+          <p><strong>เราอ่านรีวิวที่มีข้อความสูงสุด 10 รายการต่อร้าน</strong><br>ตัวเลข 28 วันจึงใช้ดูว่ามีเสียงใหม่อะไรเข้ามา ไม่ใช่อัตราโตของรีวิวทั้งหมด และใช้บอกสัดส่วนของปัญหาไม่ได้</p>
+          <p><strong>กิจกรรมหรือเส้นทางต้องมีอย่างน้อยสองร้าน</strong><br>และต้องเช็กว่าเวลาทำการของทั้งสองร้านทับกันจริงก่อนเริ่มทดลอง</p>
+          <p><strong>ข้อมูลพื้นที่เป็นเพียงสมมติฐานตั้งต้น</strong><br>22 พื้นที่ที่เลือกไม่ใช่ที่อยู่จริงของลูกค้า และ 806 พื้นที่เป็นเพียงฐานเปรียบเทียบ</p>
+        </div>
+        <div class="method-label" id="daypartLabel"></div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="footer shell">
+    <p>ใช้เพื่อเลือกเรื่องที่ควรตรวจและลงมือทำ ไม่ใช่เพื่อสรุปแทนลูกค้าทั้งหมด</p>
+    <nav><a id="workbenchLink" href="#">ดูทะเบียนข้อมูล</a><a id="reportLink" href="#">ดูตัวเลขรายงาน</a></nav>
+  </footer>
+  <dialog id="evidenceDialog" class="evidence-dialog" aria-labelledby="evidenceDialogTitle">
+    <div class="dialog-shell">
+      <header class="dialog-head">
+        <div>
+          <p class="eyebrow" id="evidenceDialogKicker">รายละเอียดหลักฐาน</p>
+          <h2 id="evidenceDialogTitle">ข้อสังเกตต้นทาง</h2>
+        </div>
+        <button type="button" class="dialog-close" id="evidenceDialogClose" aria-label="ปิดรายละเอียด">ปิด</button>
+      </header>
+      <div id="evidenceDialogBody" class="evidence-body"></div>
+    </div>
+  </dialog>
+  <script src="./data/snapshot.js?v=20260803-8"></script>
+  <script src="./data/source-observations.js?v=20260803-8"></script>
+  <script src="./data/review-detail-copy.js?v=20260803-8"></script>
+  <script src="./data/monthly-reviews.js?v=20260803-8"></script>
+  <script src="./data/tenant-review-items.js?v=20260803-8"></script>
+  <script src="./data/action-plans.js?v=20260803-8"></script>
+  <script src="./data/competitor-map.js?v=20260803-8"></script>
+  <script src="./data/place-media.js?v=20260803-8"></script>
+  <script src="./map-engine.js?v=20260803-8" defer></script>
+  <script src="./app.js?v=20260803-8" defer></script>
+</body>
+</html>
