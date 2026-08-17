@@ -64,9 +64,59 @@
   function sign(n) { return n == null ? '' : (n > 0 ? '+' : '') + n; }
   function comma(n) { return n == null ? '' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
 
+  // ---- v2.1 evidence links: reuse URLs already shipped with the site data files ----
+  var SHEET_LINKS = [
+    { name: 'Signal Workbench', url: 'https://docs.google.com/spreadsheets/d/1BbQCxvaefJFuMe2F8SwVwQKFTdbS4KCHhUUYDfh70Gk' },
+    { name: 'Config Master', url: 'https://docs.google.com/spreadsheets/d/1ceH09js4hv3yCFKgHF6z1dLaT66rSbyKMpGxGL0INsg' }
+  ];
+  function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9฀-๿]+/g, ''); }
+  function evidenceMaps() {
+    var v = {}, t = {};
+    try {
+      var w = (typeof window !== 'undefined') ? window : {};
+      ((w.MLA_COMPETITOR_MAP && w.MLA_COMPETITOR_MAP.locations) || []).forEach(function (l) {
+        if (l.id && l.mapUrl) v[String(l.id).toUpperCase()] = l.mapUrl;
+      });
+      (w.MLA_TENANT_REVIEW_ITEMS || []).forEach(function (it) {
+        var k = norm(it.tenant);
+        if (k && it.sourceUrl && !t[k]) t[k] = it.sourceUrl;
+      });
+    } catch (e) { /* evidence is optional */ }
+    return { v: v, t: t };
+  }
+  function tenantUrl(EV, name) {
+    var n = norm(name); if (!n) return null;
+    if (EV.t[n]) return EV.t[n];
+    var ks = Object.keys(EV.t), i, k;
+    for (i = 0; i < ks.length; i++) { k = ks[i]; if (k.length >= 4 && (n.indexOf(k) === 0 || k.indexOf(n) === 0)) return EV.t[k]; }
+    for (i = 0; i < ks.length; i++) { k = ks[i]; if (k.length >= 5 && n.indexOf(k) >= 0) return EV.t[k]; }
+    return null;
+  }
+  function evLink(url) {
+    return url ? ' <a class="mlav2-ev" href="' + esc(url) + '" target="_blank" rel="noopener">ดูหลักฐาน</a>' : '';
+  }
+
+  // ---- v2.1 tenant categories (bridge until the sheet carries a category column; feed value wins when present) ----
+  var CAT_KEYS = [
+    ['อาหารและเครื่องดื่ม', ['sourcream', 'meisaku', 'tonton', 'stof', 'sushiro', 'ท่านพ่อ', 'afteryou', 'starbucks', 'doorae', 'beefbank', 'thongsmith', 'shabushizen']],
+    ['ความงามและสุขภาพ', ['barberista', 'eminence', 'myora', 'alicia', 'mammamia', 'themoon', 'atmedical']],
+    ['ค้าปลีกและไลฟ์สไตล์', ['bosch', 'eveandboy', 'sightsense', 'petall', 'treasurefactory']],
+    ['เรียนและออกกำลังกาย', ['found', 'flow', 'whalepilates']]
+  ];
+  function tenantCategory(t) {
+    if (t && t.category) return String(t.category);
+    var n = norm(t && t.name);
+    for (var i = 0; i < CAT_KEYS.length; i++) {
+      var keys = CAT_KEYS[i][1];
+      for (var j = 0; j < keys.length; j++) { if (n.indexOf(norm(keys[j])) >= 0) return CAT_KEYS[i][0]; }
+    }
+    return null;
+  }
+
   // ---- pure render core (also exported for Node tests) ----
   function buildHTML(feed, snapshotMeta) {
     if (!feed || !feed.meta) return '';
+    var EV = evidenceMaps();
     var m = feed.meta;
     var sec = m.sectionDataAsOf || {};
     var snapDate = snapshotMeta && snapshotMeta.dataAsOf ? snapshotMeta.dataAsOf : null;
@@ -130,8 +180,9 @@
           var w = Math.max(3, Math.round((v.perDay / maxRate) * 100));
           var tot = v.reviews != null ? '<span class="mlav2-ptot">' + comma(v.reviews) + ' รีวิว' + (v.delta != null ? ' (' + sign(v.delta) + ')' : '') + '</span>' : '';
           var pct = v.pct != null ? '<span class="mlav2-pct">+' + v.pct + '% ' + TH.ofBase + '</span>' : '';
+          var ev = evLink(EV.v[String(v.id || '').toUpperCase()]);
           return '<div class="mlav2-prow' + (v.isParc ? ' mlav2-prow--hi' : '') + '">' +
-            '<span class="mlav2-pname">' + (v.isParc ? '★ ' : '') + esc(v.name) + '</span>' +
+            '<span class="mlav2-pname">' + (v.isParc ? '★ ' : '') + esc(v.name) + ev + '</span>' +
             '<span class="mlav2-pbarwrap"><span class="mlav2-pbar" style="width:' + w + '%"></span></span>' +
             '<span class="mlav2-pval">' + esc(v.perDay) + ' ' + TH.reviewsPerDay + '</span>' + pct + tot + '</div>';
         }).join('') + '</div>' +
@@ -146,21 +197,37 @@
       s4body = '<p class="mlav2-empty">' + TH.s4empty + '</p>';
     } else {
       var top = (d.top3 || []).map(function (x) {
-        return '<div class="mlav2-drow"><span class="mlav2-pname">' + esc(x.name) + '</span>' +
+        return '<div class="mlav2-drow"><span class="mlav2-pname">' + esc(x.name) + evLink(tenantUrl(EV, x.name)) + '</span>' +
           '<span class="mlav2-pbarwrap"><span class="mlav2-pbar" style="width:' + Math.max(3, x.share || 0) + '%"></span></span>' +
           '<span class="mlav2-pval">+' + esc(x.delta) + ' · ' + esc(x.share) + '%</span></div>';
       }).join('');
       var silentList = (d.silent && d.silent.length) ?
-        '<p class="mlav2-foot"><strong>' + TH.silent + ' (' + d.silentCount + '):</strong> ' + esc(d.silent.join(' · ')) + '</p>' : '';
+        '<p class="mlav2-foot"><strong>' + TH.silent + ' (' + d.silentCount + '):</strong> ' + d.silent.map(function (nm) {
+          return esc(nm) + evLink(tenantUrl(EV, nm));
+        }).join(' · ') + '</p>' : '';
+      // v2.1 อันดับในหมวด — ร้านเล็กที่โตดีในหมวดตัวเองต้องมองเห็นได้ ไม่จมอยู่ใต้ร้านฐานใหญ่
+      var byCat = {};
+      (feed.tenants || []).forEach(function (t) {
+        if (!t.velocity || t.velocity.reviewsDelta == null) return;
+        var c = tenantCategory(t); if (!c) return;
+        (byCat[c] = byCat[c] || []).push({ name: t.name, delta: t.velocity.reviewsDelta });
+      });
+      var catRows = Object.keys(byCat).filter(function (c) { return byCat[c].length >= 2; }).map(function (c) {
+        var rows = byCat[c].sort(function (a, b) { return (b.delta || 0) - (a.delta || 0); }).slice(0, 3);
+        return '<div class="mlav2-cat"><span class="mlav2-cat-name">' + esc(c) + '</span><span class="mlav2-cat-rank">' +
+          rows.map(function (x, i) { return (i + 1) + ') ' + esc(x.name) + ' ' + sign(x.delta) + evLink(tenantUrl(EV, x.name)); }).join(' · ') +
+          '</span></div>';
+      }).join('');
+      var catBlock = catRows ? '<p class="mlav2-note" style="margin-top:.9rem">อันดับรีวิวใหม่ เทียบเฉพาะร้านหมวดเดียวกัน</p>' + catRows : '';
       s4body = '<p class="mlav2-lead"><strong>' + esc(d.top3SharePct) + '%</strong> ' + TH.share +
-        ' มาจาก 3 ร้านบนสุด จาก ' + esc(d.tenantsCounted) + ' ร้านที่วัดได้</p>' + top + silentList;
+        ' มาจาก 3 ร้านบนสุด จาก ' + esc(d.tenantsCounted) + ' ร้านที่วัดได้</p>' + top + silentList + catBlock;
     }
     var s4 = section(TH.s4, s4body);
 
     // S5 rating movers (venues + tenants with ratingDelta != 0)
     var movers = [];
-    (feed.venues || []).forEach(function (v) { if (v.velocity && v.velocity.ratingDelta) movers.push({ name: v.name, d: v.velocity.ratingDelta, now: v.rating }); });
-    (feed.tenants || []).forEach(function (t) { if (t.velocity && t.velocity.ratingDelta) movers.push({ name: t.name, d: t.velocity.ratingDelta, now: t.rating }); });
+    (feed.venues || []).forEach(function (v) { if (v.velocity && v.velocity.ratingDelta) movers.push({ name: v.name, d: v.velocity.ratingDelta, now: v.rating, url: EV.v[String(v.id || '').toUpperCase()] }); });
+    (feed.tenants || []).forEach(function (t) { if (t.velocity && t.velocity.ratingDelta) movers.push({ name: t.name, d: t.velocity.ratingDelta, now: t.rating, url: tenantUrl(EV, t.name) }); });
     movers.sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); });
     var s5body;
     if (!movers.length) {
@@ -169,7 +236,7 @@
       s5body = '<div class="mlav2-movers">' + movers.map(function (x) {
         var now = x.now != null ? '<span class="mlav2-mnow">★' + esc(x.now) + '</span> ' : '';
         return '<span class="mlav2-mover mlav2-mover--' + (x.d > 0 ? 'up' : 'down') + '">' +
-          esc(x.name) + ' ' + now + '<b>' + sign(x.d) + '</b></span>';
+          esc(x.name) + ' ' + now + '<b>' + sign(x.d) + '</b>' + evLink(x.url) + '</span>';
       }).join('') + '</div>';
     }
     var s5 = section(TH.s5, s5body);
@@ -192,7 +259,10 @@
         stat('รวม', ss.total, 'neutral') + '</div>' +
         (ss.pending && ss.pending > 0
           ? '<p class="mlav2-foot mlav2-warn">' + TH.bottleneck + '</p>'
-          : (ss.verified ? '<p class="mlav2-foot mlav2-ok">คิว verification เคลียร์แล้ว — พร้อมออกรายงานเต็มตาม trigger</p>' : ''));
+          : (ss.verified ? '<p class="mlav2-foot mlav2-ok">คิวตรวจยืนยันเคลียร์แล้ว — ข้อมูลชุดนี้พร้อมใช้อ้างอิงได้เต็มที่</p>' : '')) +
+        '<p class="mlav2-foot">ชีตข้อมูล: ' + SHEET_LINKS.map(function (s) {
+          return '<a class="mlav2-ev" href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a>';
+        }).join(' · ') + ' <span class="mlav2-dim">(เปิดได้เฉพาะคนที่มีสิทธิ์)</span></p>';
     }
     var s6 = section(TH.s6, s6body);
 
@@ -222,8 +292,8 @@
           '<div class="mlav2-role-head"><span class="mlav2-role-name">' + esc(r.role) + '</span>' +
           '<span class="mlav2-role-flag">' + (r.fired ? TH.fired : TH.quiet) + '</span></div>' +
           (r.insight ? '<p class="mlav2-role-insight">' + esc(r.insight) + '</p>' : '') +
-          (r.actionCard ? '<p class="mlav2-role-act">→ ' + esc(r.actionCard) + '</p>' : '') +
-          (r.guardrail ? '<p class="mlav2-role-guard">⚠ ' + esc(r.guardrail) + '</p>' : '') +
+          (r.actionCard ? '<p class="mlav2-role-act"><strong>ทำสัปดาห์นี้:</strong> ' + esc(r.actionCard) + '</p>' : '') +
+          (r.guardrail ? '<p class="mlav2-role-guard"><strong>ระวัง:</strong> ' + esc(r.guardrail) + '</p>' : '') +
           '</div>';
       }).join('') + '</div>';
     }
@@ -304,7 +374,13 @@
     '.mlav2-role-insight{color:var(--text-secondary,#45514D);font-size:.85rem;margin:.15rem 0}',
     '.mlav2-role-act{color:var(--brand-garden,#365E55);font-size:.85rem;font-weight:var(--weight-ui,500);margin:.25rem 0 .15rem}',
     '.mlav2-role-guard{color:var(--warning-ink,#795300);font-size:.78rem;margin:.15rem 0 0}',
-    '@media(max-width:640px){.mlav2-prow,.mlav2-drow{grid-template-columns:1fr auto}.mlav2-pbarwrap{grid-column:1/-1;order:3}}'
+    '@media(max-width:640px){.mlav2-prow,.mlav2-drow{grid-template-columns:1fr auto}.mlav2-pbarwrap{grid-column:1/-1;order:3}}',
+    '.mlav2-ev{font-size:.72rem;font-weight:var(--weight-ui,500);color:var(--brand-garden,#365E55);text-decoration:underline;text-underline-offset:2px;white-space:nowrap}',
+    '.mlav2-ev:hover{color:var(--brand-bougainvillea,#A94372)}',
+    '.mlav2-dim{color:var(--text-metadata,#504A45);font-size:.72rem}',
+    '.mlav2-cat{display:flex;flex-wrap:wrap;gap:.3rem .6rem;align-items:baseline;padding:.45rem .7rem;border-radius:10px;background:var(--surface-alt,#EFE6D9);margin-bottom:.4rem}',
+    '.mlav2-cat-name{font-weight:var(--weight-ui,500);font-size:.8rem;color:var(--text-primary,#24312F);white-space:nowrap}',
+    '.mlav2-cat-rank{color:var(--text-secondary,#45514D);font-size:.82rem}'
   ].join('');
 
   if (typeof module !== 'undefined' && module.exports) {
